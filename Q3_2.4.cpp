@@ -7,11 +7,10 @@ int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
 
-    MPI_Comm my_comm = MPI_COMM_WORLD;
     int size, rank;
 
-    MPI_Comm_size(my_comm, &size);
-    MPI_Comm_rank(my_comm, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     printf("Process: %d out of %d\n", rank, size);
 
