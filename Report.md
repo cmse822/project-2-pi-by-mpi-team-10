@@ -8,6 +8,52 @@ Using a chunksize of 1 in this context is a bad strategy because it leads to fal
 A better chunksize would be larger than 1, ideally large enough to ensure that the work assigned to each thread covers a block of data that fits within a single cache line or spans multiple cache lines without overlap between threads. This reduces the risk of false sharing by aligning work with cache line boundaries and improving cache utilization. The optimal chunksize depends on the specific cache line size of the system and the nature of the calculation, but it should be chosen to minimize cross-thread cache line invalidation while maximizing the utilization of each thread.
 
 ### 1.3 (Ex. 2.21)
+```c
+// Global Version
+for (i = 0; i < ProblemSize; i++) {
+    if (i == 0)
+        a[i] = (b[i] + b[i + 1]) / 2;
+    else if (i == ProblemSize - 1)
+        a[i] = (b[i] + b[i - 1]) / 2;
+    else
+        a[i] = (b[i] + b[i - 1] + b[i + 1]) / 3;
+}
+
+// Parallel Version with boundary fix
+MPI_Comm_rank(MPI_COMM_WORLD, &myTaskID);
+MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
+if (myTaskID == 0)
+    leftproc = MPI_PROC_NULL;
+else
+    leftproc = myTaskID - 1;
+if (myTaskID == nTasks - 1)
+    rightproc = MPI_PROC_NULL;
+else
+    rightproc = myTaskID + 1;
+MPI_Sendrecv(&b[LocalProblemSize - 1], &bfromleft, rightproc);
+MPI_Sendrecv(&b[0], &bfromright, leftproc);
+// get bfromleft and bfromright from neighbour processors, then
+for (i = 0; i < LocalProblemSize; i++) {
+    if (i == 0)
+        bleft = bfromleft;
+    else
+        bleft = b[i - 1];
+    if (i == LocalProblemSize - 1)
+        bright = bfromright;
+    else
+        bright = b[i + 1];
+    // handle if we are first operation
+    if (myTaskID == 0 && i == 0) {
+        a[i] = (b[i] + bright) / 2;
+    }
+    // handle if we are the very last operation
+    else if (myTaskID == nTasks && i == LocalProblemSize - 1) {
+        a[i] = (b[i] + bleft) / 2;
+    } else {
+        a[i] = (b[i] + bleft + bright) / 3;
+    }
+}
+```
 ### 1.4 (Ex. 2.22)
 ### 1.5 (Ex. 2.23)
 ### 1.6 (Ex. 2.27)
