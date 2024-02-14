@@ -55,6 +55,53 @@ for (i = 0; i < LocalProblemSize; i++) {
 }
 ```
 ### 1.4 (Ex. 2.22)
+
+Equation 2.5
+$
+\begin{cases}
+y_i ← y_i + x_{i−1} & i = 1 . . . n − 1 \\
+y_0 ← y_0 + x_{n−1} & i = 0
+\end{cases}
+$
+
+```c
+int main(int argc, char *argv[])
+{
+    MPI_INIT(&argc, &argv);
+    int x, y = array elements of x[rank] and y[rank];
+    int myTaskID, nTasks;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myTaskID);
+    MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
+
+    // Send out x value to my right neighbor, as long as I'm not the last processor.
+    if(myTaskId != nTasks-1){
+        MPI_ISend(x[myTaskId], 1, MPI_INT, myTaskID+1, 0, MPI_COMM_WORLD, &sendhandle);
+    }
+    
+
+    //check what process number I am
+    int recieved = 0;
+    if(myTaskId == 0){
+        // I am first process, recieve from last processor 
+        MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
+    }
+    else {
+        // I am not the first, recieve from left processor
+        MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
+    }
+    MPI_Wait(recvhandle);
+
+    //Do work with recieved value.
+    y[myTaskId] = y[myTaskId] + recieved;
+
+    
+    MPI_Wait(sendhandle);
+    MPI_FINALIZE();
+}
+
+```
+The disadvantge of this code compared to the blocking code is that it has to allocate more memory to buffers as it can't reuse the send buffer again since it doesn't know if the send has completed by the time we are looking to recieve an element from the left neighbor.  Manually managing the completion of the sending and recieving operations also leads to increased complexity.
+
 ### 1.5 (Ex. 2.23)
 ### 1.6 (Ex. 2.27)
 In parallel computing, overlapping computation and communication can greatly enhance performance, depending on the specific tasks involved. Let's consider the potential gains in various scenarios:
