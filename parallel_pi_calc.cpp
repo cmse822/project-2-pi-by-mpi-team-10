@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
   double pi;
   double avepi;
-  double averages[4];
+  double averages[64];
   int darts = 10000;
   int rounds = 100;
   int root = 0;
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // Ensure inputs are valid, if not, exit
-  if (tasks > 4 || tasks < 1 || darts < 1 || rounds < 1)
+  if (tasks > 64 || tasks < 1 || darts < 1 || rounds < 1)
   {
     if (rank == 0)
     {
@@ -37,15 +37,16 @@ int main(int argc, char *argv[])
     MPI_Finalize();
     return 1;
   }
+  double startTime = MPI_Wtime();
 
   // Initial display, main task only (rank = 0)
   if (rank == 0)
   {
-    printf("Starting parallel version of pi calculation using dartboard algorithm (darts = %d, rounds = %d)...\n\n", darts, rounds);
+    printf("I: %d %d %d\n", tasks, darts, rounds);
   }
 
   // Set different seed for each process (will be the same each instance for testing)
-  srandom((rank + 1));
+  srandom((rank + 1) * tasks);
 
   // Calculate running average for (rounds / # processes)
   avepi = 0;
@@ -69,12 +70,12 @@ int main(int argc, char *argv[])
     for (int i = 0; i < tasks; ++i)
     {
       pi += averages[i];
-      printf("Process finished, average is: %10.8f\n", averages[i]);
     }
     pi /= (double)tasks;
-    printf("\nFinal approximation of PI: %10.8f\n", pi);
-    printf("\nReal value of PI: 3.1415926535897\n");
+    printf("F: %10.8f\n", pi);
   }
+  double endTime = MPI_Wtime();
+  printf("P: %d %10.8f %10.8f\n", rank, endTime - startTime, avepi);
 
   // Stop MPI and exit
   MPI_Finalize();
