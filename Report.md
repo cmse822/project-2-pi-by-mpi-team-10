@@ -103,6 +103,9 @@ int main(int argc, char *argv[])
 The disadvantge of this code compared to the blocking code is that it has to allocate more memory to buffers as it can't reuse the send buffer again since it doesn't know if the send has completed by the time we are looking to recieve an element from the left neighbor.  Manually managing the completion of the sending and recieving operations also leads to increased complexity.
 
 ### 1.5 (Ex. 2.23)
+Considering that we have a communciation between two nodes with bandwith that only allows for one message to pass it would be beneficial to reduce the amount of messages sent. In the hybrid model we would be able to save bandwidth by sending one bundle of messages through between the nodes.  In addition we would be able to save out on the message latency that comes from communication between processors on the same node as they would be able to use the alternative communication and not have to go through the network.
+
+
 ### 1.6 (Ex. 2.27)
 In parallel computing, overlapping computation and communication can greatly enhance performance, depending on the specific tasks involved. Let's consider the potential gains in various scenarios:
 
