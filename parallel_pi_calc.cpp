@@ -18,8 +18,8 @@ int main(int argc, char *argv[])
   // Accept new values for darts and rounds from command line
   if (argc == 3)
   {
-    darts = strtol(argv[1], NULL, 10);
-    rounds = strtol(argv[2], NULL, 10);
+    darts = strtol(argv[2], NULL, 10);
+    rounds = strtol(argv[1], NULL, 10);
   }
 
   // Start MPI
@@ -56,6 +56,13 @@ int main(int argc, char *argv[])
 
     // Feel free to uncomment, but due to how buffering stdout works, this will not always come out nicely
     // printf("Process %d | After %3d throws, average value of pi = %10.8f\n", rank, (darts * (i + 1)), avepi);
+  }
+  // Account for extra rounds if rounds isn't divisible by tasks (some tasks will have an extra, some won't)
+  if (rank < rounds % tasks)
+  {
+    pi = dboard(darts);
+    avepi = ((avepi * i) + pi)/(i + 1);
+    i++;
   }
 
   // Gather each average in the array (won't always be full, max 4 tasks)
