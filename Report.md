@@ -63,32 +63,40 @@ for (i=0; i<LocalProblemSize; i++) {
 ### 1.4 (Ex. 2.22)
 
 
-| Equation 2.5 |  |
-| --- | --- |
+| Equation 2.5       |                  |
+| ---                | ---              |
 | y_i ← y_i + x_{i−1}| i = 1 . . . n − 1|
-|y_0 ← y_0 + x_{n−1} |  i = 0 |
+|y_0 ← y_0 + x_{n−1} |  i = 0           |
 
-
+This equation was solved with a blocking solution in the textbook, and a non-blocking solution is as shown below.
 ```c
 int rank, size;
-MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-MPI_Comm_rank(MPI_COMM_WORLD, &size);
-const int n = ...;
-double x[n], y[n];
-for(int i = 1; i < n, i++) {
-  if (rank == 0) {
-   MPI_request req;
-   MPI_ISend(x + i - 1, 1, MPI_DOUBLE, i, 0, MPI_COM_WORLD, &req);
-   y[i] += x[i - 1];
-  } else if (rank == i) {
-   MPI_Request req;
-   MPI_IRecv(x + i - 1, 1, MPI_DOUBLE, 0, 0, MPI_COM_WORLD, &req);
-   y[0] += x[i - 1];
-  }
-}
+MPI_Comm_rank(MPI_COMM_WORLD, &myTaskID);
+MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
 
+// Handle left processor neighbor
+if (myTaskID == 0) { // I'm first procesor, left neighbor is last processor
+    leftproc = nTasks - 1;
+} else {
+    leftproc = myTaskID - 1;
+}
+// Handle right processor neighbor
+if (myTaskID == nTasks-a) { // I'm last procesor, right neighbor is first processor
+    rightproc = 0;
+} else {
+    rightproc = nTasks + 1;
+}
+//send x element to right
+MPI_ISend(&x[i], 1, MPI_DOUBLE, rightproc, myTaskID, MPI_COMM_WORLD, &handle_send);
+//recieve x element from left
+MPI_IRecv(&x_element, 1, MPI_DOUBLE, leftproc, myTaskID, MPI_COMM_WORLD, &handle_recieve);
+MPI_Wait(handle_recieve);
+
+y[myTaskID] = y[myTaskId] + x_element
 ```
-The disadvantage of this code compared to the blocking code is that it has more overhead in managing the MPI requests.  Manually managing the completion of the sending and receiving operations leads to increased complexity with synchronization.  Each rank continues to its next iteration immediately after starting their send or recieve operation, which means we'll need to wait before using the updated version of y. A blocking solution does not have such an issue as it always waits for its recieve before proceeding to next iteration..
+This code allows each processor to immediately send their x element to the right without waiting to see if it got there before receiving their proper x element.
+
+The disadvantage of this code compared to the blocking code is that it has more overhead in managing the MPI requests.  Manually managing the completion of the sending and receiving operations leads to increased complexity with synchronization.  Each rank continues to its next iteration immediately after starting their send or recieve operation, which means we'll need to wait before using the updated version of y. A blocking solution does not have such an issue as it always waits for its recieve before proceeding to next iteration.
 
 
 ### 1.5 (Ex. 2.23)
