@@ -1,5 +1,4 @@
-Warmup 
-## Part 1
+## Part 1: Warmup Exercises
 ### 1.1 (Ex. 2.18)
 While the serial initialization part sets all elements of a to zero without issue, the parallel update portion can lead to inefficient execution due to cache conflicts and cache misses as multiple threads simultaneously update different elements of the array a that may reside on the same cache line. This inefficiency reduces the overall performance of the parallel section.
 ### 1.2 (Ex. 2.19)
@@ -82,12 +81,12 @@ int main(int argc, char *argv[])
 	//check what process number I am
 	int recieved = 0;
 	if(myTaskId == 0){
-    	// I am first process, recieve from last processor
-    	MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
+        // I am first process, recieve from last processor
+        MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
 	}
 	else {
-    	// I am not the first, recieve from left processor
-    	MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
+        // I am not the first, recieve from left processor
+        MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
 	}
 	MPI_Wait(recvhandle);
 
