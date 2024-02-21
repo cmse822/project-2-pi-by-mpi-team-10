@@ -148,6 +148,25 @@ int main(int argc, char *argv[])
 }
 
 ```
+
+
+The output for this code woud be
+```bash
+[kamalida@dev-intel16 project-2-pi-by-mpi-team-10]$ mpiexec -n 4 ./a.out
+Proc Name: dev-intel16
+Proc Name: dev-intel16
+Proc Name: dev-intel16
+Proc Name: dev-intel16
+```
+
+```bash
+[kamalida@dev-amd20 project-2-pi-by-mpi-team-10]$ mpiexec -n 4 ./a.out
+Proc Name: dev-amd20
+Proc Name: dev-amd20
+Proc Name: dev-amd20
+Proc Name: dev-amd20
+```
+
 ### Exercise 2.4
 
 ```c
@@ -172,6 +191,17 @@ int main(int argc, char *argv[])
 }
 ```
 
+
+The output for this code woud be
+```bash
+[kamalida@dev-intel16 project-2-pi-by-mpi-team-10]$ mpiexec -n 4 ./a.out
+Process: 0 out of 4
+Process: 1 out of 4
+Process: 2 out of 4
+Process: 3 out of 4
+```
+
+
 ### Exercise 2.5
 ```c
 #include "mpi.h"
@@ -195,6 +225,12 @@ int main(int argc, char *argv[])
     return 0;
 }
 ```
+
+```bash
+[kamalida@dev-intel16 project-2-pi-by-mpi-team-10]$ mpiexec -n 4 ./a.out
+Process: 0 out of 4
+```
+
 
 # Part 4
 
