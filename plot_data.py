@@ -189,3 +189,19 @@ plt.grid(True)
 plt.legend()
 plt.savefig(plotpath + "Q4-4_plot_runtimes_ideal.png")
 
+# Plot speedup vs processor count for each dart count
+plt.figure(figsize=(10, 6))
+plt.yscale("log")
+plt.xscale("log")
+eff_1000 = [hpcc_times_1000[0] / hpcc_times_1000[i] / hpcc_process_counts_1000[i] for i in range(len(hpcc_times_1000))]
+eff_1000000 = [hpcc_times_1000000[0] / hpcc_times_1000000[i] / hpcc_process_counts_1000000[i] for i in range(len(hpcc_times_1000000))]
+eff_1000000000 = [hpcc_times_1000000000[0] / hpcc_times_1000000000[i] / hpcc_process_counts_1000000000[i] for i in range(len(hpcc_times_1000000000))]
+plt.plot(hpcc_process_counts_1000, eff_1000, marker='o', color='b', linestyle='-', label='1e3 Darts')
+plt.plot(hpcc_process_counts_1000000, eff_1000000, marker='x', color='r', linestyle='-', label='1e6 Darts')
+plt.plot(hpcc_process_counts_1000000000, eff_1000000000, marker='^', color='g', linestyle='-', label='1e9 Darts')
+plt.title(f"Effieciency Vs Processors")
+plt.xlabel('Processors')
+plt.ylabel('Efficiency')
+plt.grid(True)
+plt.legend()
+plt.savefig(plotpath + "Q4-4_plot_efficiencies.png")
