@@ -116,71 +116,16 @@ On the other hand, if we are dealing with a situation with only computation and 
 
 In real-world scenarios we are generally in the situation where both computation and communication occur, overlapping becomes crucial. By executing these tasks concurrently, idle periods are minimized, leading to faster overall execution times. The degree of benefit depends on factors such as communication efficiency, task parallelism, and the ability to overlap tasks without introducing overhead.
 
-### 2
+## Part 2
 
-### 4
-
-## 4.1
-
-We have extended ser_pi_calc.cpp in parallel_pi_calc.cpp, see that in the main directory. To test, "mpic++ parallel_pi_calc.cpp -o pi.out" to compile, "mpiexec -n {# Tasks} ./pi.out {# rounds} {# darts}".
-
-## 4.2
-
-Here are the results from running our parallel program on Thad's desktop using 1-4 ranks, each using 100 rounds and 10000 darts (1e6 total darts). Note, it evenly split the rounds as best as possible (for example, 3 ranks and 10 rounds would result in a split of 4,3,3 between them).
-
-![Q4-2 Plot](./data/Q4-2_plot.png)
-
-## 4.3
-
-Discussed this with the professor in class, he said what was done in 4.2 was sufficient to cover this.
-
-## 4.4
-
-The batch job used to test ranks 1-64 can be found in submitjob.sb. It was specifically tested on one node.
-
-## 4.5
-
-The results here were specifically from testing on one single node. First, here is error vs processor count for 1e3 darts (blue), 1e6 darts (red), and 1e9 darts (green). Keep in mind it is log scaled on the both x-axis and y-axis.
-
-![Q4-4 Plot Errors](./Q4-4_plot_errors.png)
-
-As can be seen, the more darts used, the more accurate the result is compared to pi. While the result at 8 processors for 1e3 darts is an outlier, this can be attributed to a lucky chance with few darts. The more darts there were, the smoother the curve / less variance there typically was. These results match what is to be expected. The rate of convergence depending as a variable of dart count appears to be linear (as in, 1000 times more darts is about 10 times less error, which does make sense. Its hard to tell the exact convergence rate with only three points, but it is definitely the case that more darts means reduced error. As for the processor count, this doesn't relate to the convergence and it shouldn't, as the total number of darts remains the same for each processor count.
-
-## 4.6
-
-Now let us look at runtime vs processors, with the same color scheme for dart counts as before. 
-
-![Q4-4 Plot Runtimes](./Q4-4_plot_runtimes.png)
-
-As expected, the more darts, the longer it takes in general. Note, 1e9 darts (green) behaves as expected, getting faster the more processors there are, 1e6 starts getting slower after 32, and 1e3 gets slower after the 1. We predict this is due to the dart counts being small enough such that the overhead from setting up / communicating with other ranks is greater than just doing the calculation serially. In fact, 1e3 (blue) ends up reaching the same time as 1e6 at 64 ranks, likely because it is measuring the latency between communication/setup at that time for both.
-
-This next figure is the same as before, but with "ideal" scalings added for each line.
-
-![Q4-4 Plot Runtimes with Ideal Scalings](./Q4-4_plot_runtimes_ideal.png)
-
-Notice how for under 10 processors, both 1e6 and 1e9 follow near perfectly, and then they still keep close after that. As such, for higher dart counts and low processor counts, scaling is ideal. As for low dart counts, the scaling is awful as it actuall tends in the other direction, likely due to overhead outweighing the cost of doing it serially.
-
-Finally, let's look at the efficiency of these using the same color scheme for dart counts as before.
-
-![Q4-4 Plot Efficiencies](./Q4-4_plot_efficiencies.png)
-
-As can be seen, 1e3 darts (blue) loses efficiency constantly from the start as processor count increases. On the other hand, both 1e6 and 1e9 retain parallel efficiency closer to one for longer, both starting to fall around 16 processors. While they broth drop near the same time, 1e9 (green) doesn't fall quite as far, which is expected. As for why the parallel efficiency varies with dart count, it is likely do to the fact that eventually the overhead and latency from more processors ends up utilizing more resources than it would take to do the calculation with less processors.
-
-## 4.7
-
-Here are the error and runtime results for testing on 5 nodes versus the single node results from before.
-
-![Q4-4 Plot Errors](./data/5-NodeData/Q4-4_plot_errors.png)
-
-![Q4-4 Plot Runtimes](./data/5-NodeData/Q4-4_plot_runtimes.png)
-
-As can be seen, there is little difference in errors. On the other hand, the runtimes are mostly the same for 1e9 darts while 1e6 flattens out earlier and 1e3 increases faster and sooner before leveling out with 1e6. We predict that this is due to the smaller dart counts reaching the latency/overhead limit sooner as the communication cost is likely limiting them from becoming any faster at that point.
-
+We followed the instructions of part 2 and setup the hpcc.
 
 ## Part 3
 The code for this section is in part3 of hello.cpp. Initially, when compiled with g++ and executed normally, "Hello World!" was printed once. However, running it with mpiexec -n 4 printed "Hello World!" four times, as expected.
 
 We then integrated MPI functionality by including #include "mpi.h", MPI_Initialize, and MPI_Finalize, along with output statements. After compiling with mpiCC, running with mpiexec using four processes resulted in clear outputs: "before init" printed four times, "Hello World! (after init before finalize)" printed four times, and "after finalize" printed four times. This clear separation occurred because MPI_Initialize and MPI_Finalize create a barrier, ensuring all processes reach a specific point before progressing further.
+
+The exercises for part 3 are shown below, but they are also present in the repository as Q3_2.3.cpp, Q3_2.4.cpp, and Q3_2.5.cpp.
 
 ### Exercise 2.3
 ```c
@@ -251,3 +196,61 @@ int main(int argc, char *argv[])
     return 0;
 }
 ```
+
+# Part 4
+
+## 4.1
+
+We have extended ser_pi_calc.cpp in parallel_pi_calc.cpp, see that in the main directory. To test, "mpic++ parallel_pi_calc.cpp -o pi.out" to compile, "mpiexec -n {# Tasks} ./pi.out {# rounds} {# darts}".
+
+## 4.2
+
+Here are the results from running our parallel program on Thad's desktop using 1-4 ranks, each using 100 rounds and 10000 darts (1e6 total darts). Note, it evenly split the rounds as best as possible (for example, 3 ranks and 10 rounds would result in a split of 4,3,3 between them).
+
+![Q4-2 Plot](./data/Q4-2_plot.png)
+
+## 4.3
+
+Discussed this with the professor in class, he said what was done in 4.2 was sufficient to cover this.
+
+## 4.4
+
+The batch job used to test ranks 1-64 can be found in submitjob.sb. It was specifically tested on one node.
+
+## 4.5
+
+The results here were specifically from testing on one single node. First, here is error vs processor count for 1e3 darts (blue), 1e6 darts (red), and 1e9 darts (green). Keep in mind it is log scaled on the both x-axis and y-axis.
+
+![Q4-4 Plot Errors](./Q4-4_plot_errors.png)
+
+As can be seen, the more darts used, the more accurate the result is compared to pi. While the result at 8 processors for 1e3 darts is an outlier, this can be attributed to a lucky chance with few darts. The more darts there were, the smoother the curve / less variance there typically was. These results match what is to be expected. The rate of convergence depending as a variable of dart count appears to be linear (as in, 1000 times more darts is about 10 times less error, which does make sense. Its hard to tell the exact convergence rate with only three points, but it is definitely the case that more darts means reduced error. As for the processor count, this doesn't relate to the convergence and it shouldn't, as the total number of darts remains the same for each processor count.
+
+## 4.6
+
+Now let us look at runtime vs processors, with the same color scheme for dart counts as before. 
+
+![Q4-4 Plot Runtimes](./Q4-4_plot_runtimes.png)
+
+As expected, the more darts, the longer it takes in general. Note, 1e9 darts (green) behaves as expected, getting faster the more processors there are, 1e6 starts getting slower after 32, and 1e3 gets slower after the 1. We predict this is due to the dart counts being small enough such that the overhead from setting up / communicating with other ranks is greater than just doing the calculation serially. In fact, 1e3 (blue) ends up reaching the same time as 1e6 at 64 ranks, likely because it is measuring the latency between communication/setup at that time for both.
+
+This next figure is the same as before, but with "ideal" scalings added for each line.
+
+![Q4-4 Plot Runtimes with Ideal Scalings](./Q4-4_plot_runtimes_ideal.png)
+
+Notice how for under 10 processors, both 1e6 and 1e9 follow near perfectly, and then they still keep close after that. As such, for higher dart counts and low processor counts, scaling is ideal. As for low dart counts, the scaling is awful as it actuall tends in the other direction, likely due to overhead outweighing the cost of doing it serially.
+
+Finally, let's look at the efficiency of these using the same color scheme for dart counts as before.
+
+![Q4-4 Plot Efficiencies](./Q4-4_plot_efficiencies.png)
+
+As can be seen, 1e3 darts (blue) loses efficiency constantly from the start as processor count increases. On the other hand, both 1e6 and 1e9 retain parallel efficiency closer to one for longer, both starting to fall around 16 processors. While they broth drop near the same time, 1e9 (green) doesn't fall quite as far, which is expected. As for why the parallel efficiency varies with dart count, it is likely do to the fact that eventually the overhead and latency from more processors ends up utilizing more resources than it would take to do the calculation with less processors.
+
+## 4.7
+
+Here are the error and runtime results for testing on 5 nodes versus the single node results from before.
+
+![Q4-4 Plot Errors](./data/5-NodeData/Q4-4_plot_errors.png)
+
+![Q4-4 Plot Runtimes](./data/5-NodeData/Q4-4_plot_runtimes.png)
+
+As can be seen, there is little difference in errors. On the other hand, the runtimes are mostly the same for 1e9 darts while 1e6 flattens out earlier and 1e3 increases faster and sooner before leveling out with 1e6. We predict that this is due to the smaller dart counts reaching the latency/overhead limit sooner as the communication cost is likely limiting them from becoming any faster at that point.
