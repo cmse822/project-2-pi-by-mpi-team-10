@@ -1,8 +1,15 @@
 import matplotlib.pyplot as plt
 import math
 
-# Test data folder path
-path = "./data/"
+# Path for plots
+plotpath = "./data/"
+
+# Path for Q4-2 data
+path2 = "./data/SimpleData/"
+
+# Path for Q4-4 data
+path4 = "./data/SingleNodeData/"
+
 
 # Data from initial tests (1-4 processes)
 initial_files = ["Q4-2_output_1.txt", "Q4-2_output_2.txt", "Q4-2_output_3.txt", "Q4-2_output_4.txt"]
@@ -11,7 +18,7 @@ initial_process_counts = []
 initial_pi_calcs = []
 
 for f in initial_files:
-    with open(path + f, 'r') as file:
+    with open(path2 + f, 'r') as file:
         times = []
         for line in file:
             parts = line.split()
@@ -35,7 +42,7 @@ plt.title('Parallel PI Calculation Performance')
 plt.xlabel('Processor Count')
 plt.ylabel('Performance (seconds)')
 plt.grid(True)
-plt.savefig(path + "Q4-2_plot.png")
+plt.savefig(plotpath + "Q4-2_plot.png")
 
 # Data from tests on HPCC with 1000 darts (1-64 processes)
 
@@ -51,7 +58,7 @@ hpcc_process_counts_1000 = []
 hpcc_pi_calcs_1000 = []
 
 for f in hpcc_files_1000:
-    with open(path + f, 'r') as file:
+    with open(path4 + f, 'r') as file:
         times = []
         for line in file:
             # Split the line into components: Matrix Size, Time Taken, Performance
@@ -83,7 +90,7 @@ hpcc_process_counts_1000000 = []
 hpcc_pi_calcs_1000000 = []
 
 for f in hpcc_files_1000000:
-    with open(path + f, 'r') as file:
+    with open(path4 + f, 'r') as file:
         times = []
         for line in file:
             parts = line.split()
@@ -114,7 +121,7 @@ hpcc_process_counts_1000000000 = []
 hpcc_pi_calcs_1000000000 = []
 
 for f in hpcc_files_1000000000:
-    with open(path + f, 'r') as file:
+    with open(path4 + f, 'r') as file:
         times = []
         for line in file:
             parts = line.split()
@@ -132,42 +139,31 @@ print("Times:", hpcc_times_1000000000)
 print("PIs:", hpcc_pi_calcs_1000000000)
 
 # Plot error vs dart count for each processor count
-darts = [1000, 1000000, 1000000000]
-for i in range(len(hpcc_process_counts_1000)):
-    errors = [abs(hpcc_pi_calcs_1000[i] - math.pi),
-             abs(hpcc_pi_calcs_1000000[i] - math.pi),
-             abs(hpcc_pi_calcs_1000000000[i] - math.pi)]
-    plt.figure(figsize=(10, 6))
-    plt.plot(darts, errors, marker='o', linestyle='-')
-    plt.title(f"Error/Darts for {hpcc_process_counts_1000[i]} Processors")
-    plt.xlabel('Darts')
-    plt.ylabel('Error')
-    plt.grid(True)
-    plt.savefig(path + f"Q4-4_plot_errors_{hpcc_process_counts_1000[i]}.png")
+plt.figure(figsize=(10, 6))
+plt.yscale("log")
+plt.title(f"Error Vs Processors")
+plt.xlabel('Darts')
+plt.ylabel('Error (absolute distance from pi)')
+errors_1000 = [abs(hpcc_pi_calcs_1000[i] - math.pi) for i in range(len(hpcc_pi_calcs_1000))]
+plt.plot(hpcc_process_counts_1000, errors_1000, marker='o', color='b', linestyle='-', label='1e3 Darts')
+errors_1000000 = [abs(hpcc_pi_calcs_1000000[i] - math.pi) for i in range(len(hpcc_pi_calcs_1000000))]
+plt.plot(hpcc_process_counts_1000000, errors_1000000, marker='x', color='r', linestyle='-', label='1e6 Darts')
+errors_1000000000 = [abs(hpcc_pi_calcs_1000000000[i] - math.pi) for i in range(len(hpcc_pi_calcs_1000000000))]
+plt.plot(hpcc_process_counts_1000000000, errors_1000000000, marker='^', color='g', linestyle='-', label='1e9 Darts')
+plt.grid(True)
+plt.legend()
+plt.savefig(plotpath + f"Q4-4_plot_errors.png")
 
 # Plot runtime vs processor count for each dart count
 plt.figure(figsize=(10, 6))
-plt.plot(hpcc_process_counts_1000, hpcc_times_1000, marker='o', linestyle='-')
-plt.title(f"Runtime/Processors for 1000 Darts")
+plt.yscale("log")
+plt.plot(hpcc_process_counts_1000, hpcc_times_1000, marker='o', color='b', linestyle='-', label='1e3 Darts')
+plt.plot(hpcc_process_counts_1000000, hpcc_times_1000000, marker='x', color='r', linestyle='-', label='1e6 Darts')
+plt.plot(hpcc_process_counts_1000000000, hpcc_times_1000000000, marker='^', color='g', linestyle='-', label='1e9 Darts')
+plt.title(f"Runtime Vs Processors")
 plt.xlabel('Processors')
 plt.ylabel('Runtime (seconds)')
 plt.grid(True)
-plt.savefig(path + "Q4-4_plot_runtime_1000.png")
-
-plt.figure(figsize=(10, 6))
-plt.plot(hpcc_process_counts_1000000, hpcc_times_1000000, marker='o', linestyle='-')
-plt.title(f"Runtime/Processors for 1000000 Darts")
-plt.xlabel('Processors')
-plt.ylabel('Runtime (seconds)')
-plt.grid(True)
-plt.savefig(path + "Q4-4_plot_runtime_1000000.png")
-
-plt.figure(figsize=(10, 6))
-plt.plot(hpcc_process_counts_1000000000, hpcc_times_1000000000, marker='o', linestyle='-')
-plt.title(f"Runtime/Processors for 1000000000 Darts")
-plt.xlabel('Processors')
-plt.ylabel('Runtime (seconds)')
-plt.grid(True)
-plt.savefig(path + "Q4-4_plot_runtime_1000000000.png")
-
+plt.legend()
+plt.savefig(plotpath + "Q4-4_plot_runtimes.png")
 

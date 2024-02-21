@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &tasks);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  double startTime = MPI_Wtime();
 
   // Ensure inputs are valid, if not, exit
   if (tasks > 64 || tasks < 1 || darts < 1 || rounds < 1)
@@ -37,7 +38,6 @@ int main(int argc, char *argv[])
     MPI_Finalize();
     return 1;
   }
-  double startTime = MPI_Wtime();
 
   // Initial display, main task only (rank = 0)
   if (rank == 0)
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   }
 
   // Set different seed for each process (will be the same each instance for testing)
-  srandom((rank + 1) * tasks);
+  srandom(rank + 1);
 
   // Calculate running average for (rounds / # processes)
   avepi = 0;
@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
   // Gather each average in the array (won't always be full, max 4 tasks)
   // (send buffer, send count, send type, receive buffer, receive count, receive type, root, comm)
   MPI_Gather(&avepi, 1, MPI_DOUBLE, &averages, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
-  MPI_Barrier(MPI_COMM_WORLD);
 
   // Average each process' average and display from the main thread (rank 0)
   if (rank == 0)
