@@ -113,7 +113,7 @@ When there's only communication and no computation time, the benefits of overlap
 
 On the other hand, if we are dealing with a situation with only computation and no communication, overlapping won't directly reduce overall execution time even though it helps maximize processor utilization by initiating communication tasks during computational downtime.
 
-In real-world scenarios we are generally in the situation where both computation and communication occur, overlapping becomes crucial. By executing these tasks concurrently, idle periods are minimized, leading to faster overall execution times. The degree of benefit depends on factors such as communication efficiency, task parallelism, and the ability to overlap tasks without introducing overhead.
+In real-world scenarios we are generally in the situation where both computation and communication occur, overlapping becomes crucial. By executing these tasks concurrently, idle periods are minimized, leading to faster overall execution times. The degree of benefit depends on factors such as communication efficiency, task parallelism, and the ability to overlap tasks without introducing overhead.  The best gain that we could expect from overlapping the tasks is if computation time and the communication time take the same amount of time.  This means that there is no idle time for the work, completely hiding the communication latency and our code’s runtime would be cut in half.
 
 ## Part 2
 
