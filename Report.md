@@ -76,7 +76,7 @@ MPI_Comm_rank(MPI_COMM_WORLD, &size);
 const int n = ...;
 double x[n], y[n];
 for(int i = 1; i < n, i++) {
-  if (rank == 0) { // I am the first processor, recieve from last processor
+  if (rank == 0) {
    MPI_request req;
    MPI_ISend(x + i - 1, 1, MPI_DOUBLE, i, 0, MPI_COM_WORLD, &req);
    y[i] += x[i - 1];
@@ -88,7 +88,7 @@ for(int i = 1; i < n, i++) {
 }
 
 ```
-The disadvantage of this code compared to the blocking code is that it has more overhead  in managing the MPI requests.  Manually managing the completion of the sending and receiving operations also leads to increased complexity with synchronization.  We need to make sure to wait for the communication to be completed before manipulating the y value as the processes simply move on after starting their send or receive operation.  A blocking solution does not have such an issue.
+The disadvantage of this code compared to the blocking code is that it has more overhead in managing the MPI requests.  Manually managing the completion of the sending and receiving operations leads to increased complexity with synchronization.  Each rank continues to its next iteration immediately after starting their send or recieve operation, which means we'll need to wait before using the updated version of y. A blocking solution does not have such an issue as it always waits for its recieve before proceeding to next iteration..
 
 
 ### 1.5 (Ex. 2.23)
