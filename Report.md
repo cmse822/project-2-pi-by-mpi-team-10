@@ -62,47 +62,29 @@ for (i=0; i<LocalProblemSize; i++) {
 ```
 ### 1.4 (Ex. 2.22)
 
-Equation 2.5
-$
-\begin{cases}
-y_i ← y_i + x_{i−1} & i = 1 . . . n − 1 \\
-y_0 ← y_0 + x_{n−1} & i = 0
-\end{cases}
-$
+
+| Equation 2.5 |  |
+| --- | --- |
+| y_i ← y_i + x_{i−1}| i = 1 . . . n − 1|
+|y_0 ← y_0 + x_{n−1} |  i = 0 |
+
 
 ```c
-int main(int argc, char *argv[])
-{
-	MPI_INIT(&argc, &argv);
-	int x, y = array elements of x[rank] and y[rank];
-	int myTaskID, nTasks;
-	MPI_Comm_rank(MPI_COMM_WORLD, &myTaskID);
-	MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
-
-	// Send out x value to my right neighbor, as long as I'm not the last processor.
-	if(myTaskId != nTasks-1){
-    	MPI_ISend(x[myTaskId], 1, MPI_INT, myTaskID+1, 0, MPI_COMM_WORLD, &sendhandle);
-	}
-    
-
-	//check what process number I am
-	int recieved = 0;
-	if(myTaskId == 0){
-        // I am first process, recieve from last processor
-        MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
-	}
-	else {
-        // I am not the first, recieve from left processor
-        MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
-	}
-	MPI_Wait(recvhandle);
-
-	//Do work with recieved value.
-	y[myTaskId] = y[myTaskId] + recieved;
-
-    
-	MPI_Wait(sendhandle);
-	MPI_FINALIZE();
+int rank, size;
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+MPI_Comm_rank(MPI_COMM_WORLD, &size);
+const int n = ...;
+double x[n], y[n];
+for(int i = 1; i < n, i++) {
+  if (rank == 0) { // I am the first processor, recieve from last processor
+   MPI_request req;
+   MPI_ISend(x + i - 1, 1, MPI_DOUBLE, i, 0, MPI_COM_WORLD, &req);
+   y[i] += x[i - 1];
+  } else if (rank == i) {
+   MPI_Request req;
+   MPI_IRecv(x + i - 1, 1, MPI_DOUBLE, 0, 0, MPI_COM_WORLD, &req);
+   y[0] += x[i - 1];
+  }
 }
 
 ```
