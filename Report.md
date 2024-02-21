@@ -8,7 +8,7 @@ A better chunksize would be larger than 1, ideally large enough to ensure that t
 
 ### 1.3 (Ex. 2.21)
 ```c
-// Global Version
+// Original Global Version
 for (i = 0; i < ProblemSize; i++) {
     if (i == 0)
         a[i] = (b[i] + b[i + 1]) / 2;
@@ -19,39 +19,29 @@ for (i = 0; i < ProblemSize; i++) {
 }
 
 // Parallel Version with boundary fix
-MPI_Comm_rank(MPI_COMM_WORLD, &myTaskID);
-MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
-if (myTaskID == 0)
-    leftproc = MPI_PROC_NULL;
-else
-    leftproc = myTaskID - 1;
-if (myTaskID == nTasks - 1)
-    rightproc = MPI_PROC_NULL;
-else
-    rightproc = myTaskID + 1;
-MPI_Sendrecv(&b[LocalProblemSize - 1], &bfromleft, rightproc);
-MPI_Sendrecv(&b[0], &bfromright, leftproc);
-// get bfromleft and bfromright from neighbour processors, then
-for (i = 0; i < LocalProblemSize; i++) {
-    if (i == 0)
-        bleft = bfromleft;
-    else
-        bleft = b[i - 1];
-    if (i == LocalProblemSize - 1)
-        bright = bfromright;
-    else
-        bright = b[i + 1];
-    // handle if we are first operation
-    if (myTaskID == 0 && i == 0) {
-        a[i] = (b[i] + bright) / 2;
-    }
-    // handle if we are the very last operation
-    else if (myTaskID == nTasks && i == LocalProblemSize - 1) {
-        a[i] = (b[i] + bleft) / 2;
-    } else {
-        a[i] = (b[i] + bleft + bright) / 3;
-    }
+MPI_Comm_rank(MPI_COMM_WORLD,&myTaskID);
+MPI_Comm_size(MPI_COMM_WORLD,&nTasks);
+
+//Check what processor we are
+// I am the first processor, left neighbor is last task
+if (myTaskID==0) {
+    leftproc = nTasks - 1;
+    rightproc = nTasks + 1;
 }
+
+// I am the last processor, right neighbor is first task
+else if (myTaskID==nTasks-1) {
+    leftproc = myTaskID - 1;
+    rightproc = 1; // grab from first task
+}
+// I am a processor in middle, grab from left and right neighbor
+else{
+    leftproc = myTaskID - 1;
+    rightproc = myTaskID + 1; 
+}
+
+MPI_Sendrecv( &b[LocalProblemSize-1], &bfromleft, rightproc );
+MPI_Sendrecv( &b[0], &bfromright, leftproc);
 ```
 ### 1.4 (Ex. 2.22)
 
