@@ -1,7 +1,7 @@
 Warmup 
-## 1
+## Part 1
 ### 1.1 (Ex. 2.18)
-while the serial initialization part sets all elements of a to zero without issue, the parallel update portion can lead to inefficient execution due to cache conflicts and cache misses as multiple threads simultaneously update different elements of the array a that may reside on the same cache line. This inefficiency reduces the overall performance of the parallel section.
+While the serial initialization part sets all elements of a to zero without issue, the parallel update portion can lead to inefficient execution due to cache conflicts and cache misses as multiple threads simultaneously update different elements of the array a that may reside on the same cache line. This inefficiency reduces the overall performance of the parallel section.
 ### 1.2 (Ex. 2.19)
 Using a chunksize of 1 in this context is a bad strategy because it leads to false sharing. False sharing occurs when multiple threads modify variables that are close enough in memory to reside on the same cache line, even if they are not actually sharing data. This results in inefficient use of the cache, as one thread's update invalidates the cache line for other threads, causing unnecessary cache misses and memory traffic. This pattern of distribution (0, t, 2t, ... to the first thread, 1, 1+t, 1+2t, ... to the second, etc.) exacerbates false sharing because consecutive iterations, which are likely to modify adjacent elements of `a[]`, are assigned to different threads, increasing the likelihood that these elements are on the same cache line.
 
@@ -67,49 +67,50 @@ $
 ```c
 int main(int argc, char *argv[])
 {
-    MPI_INIT(&argc, &argv);
-    int x, y = array elements of x[rank] and y[rank];
-    int myTaskID, nTasks;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myTaskID);
-    MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
+	MPI_INIT(&argc, &argv);
+	int x, y = array elements of x[rank] and y[rank];
+	int myTaskID, nTasks;
+	MPI_Comm_rank(MPI_COMM_WORLD, &myTaskID);
+	MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
 
-    // Send out x value to my right neighbor, as long as I'm not the last processor.
-    if(myTaskId != nTasks-1){
-        MPI_ISend(x[myTaskId], 1, MPI_INT, myTaskID+1, 0, MPI_COMM_WORLD, &sendhandle);
-    }
+	// Send out x value to my right neighbor, as long as I'm not the last processor.
+	if(myTaskId != nTasks-1){
+    	MPI_ISend(x[myTaskId], 1, MPI_INT, myTaskID+1, 0, MPI_COMM_WORLD, &sendhandle);
+	}
     
 
-    //check what process number I am
-    int recieved = 0;
-    if(myTaskId == 0){
-        // I am first process, recieve from last processor 
-        MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
-    }
-    else {
-        // I am not the first, recieve from left processor
-        MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
-    }
-    MPI_Wait(recvhandle);
+	//check what process number I am
+	int recieved = 0;
+	if(myTaskId == 0){
+    	// I am first process, recieve from last processor
+    	MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
+	}
+	else {
+    	// I am not the first, recieve from left processor
+    	MPI_IReceive(recieved, 1, MPI_INT, nTasks-1, 0, MPI_COMM_WORLD, &recvhandle);
+	}
+	MPI_Wait(recvhandle);
 
-    //Do work with recieved value.
-    y[myTaskId] = y[myTaskId] + recieved;
+	//Do work with recieved value.
+	y[myTaskId] = y[myTaskId] + recieved;
 
     
-    MPI_Wait(sendhandle);
-    MPI_FINALIZE();
+	MPI_Wait(sendhandle);
+	MPI_FINALIZE();
 }
 
 ```
-The disadvantge of this code compared to the blocking code is that it has to allocate more memory to buffers as it can't reuse the send buffer again since it doesn't know if the send has completed by the time we are looking to recieve an element from the left neighbor.  Manually managing the completion of the sending and recieving operations also leads to increased complexity.
+The disadvantage of this code compared to the blocking code is that it has more overhead  in managing the MPI requests.  Manually managing the completion of the sending and receiving operations also leads to increased complexity with synchronization.  We need to make sure to wait for the communication to be completed before manipulating the y value as the processes simply move on after starting their send or receive operation.  A blocking solution does not have such an issue.
+
 
 ### 1.5 (Ex. 2.23)
-Considering that we have a communciation between two nodes with bandwith that only allows for one message to pass it would be beneficial to reduce the amount of messages sent. In the hybrid model we would be able to save bandwidth by sending one bundle of messages through between the nodes.  In addition we would be able to save out on the message latency that comes from communication between processors on the same node as they would be able to use the alternative communication and not have to go through the network.
+Considering that we have a communication between two nodes with bandwidth that only allows for one message to pass, the hybrid model has a performance increase in terms of bandwidth compared to the purely distributed model.  This is because the hybrid model is able to bundle messages together in one message.  The hybrid model also has lower latency compared to the purely distributed model as the hybrid model’s data can be shared through shared memory without having to go through the network.  Though, The hybrid model can run into issues with false sharing which will increase the latency. 
 
 
 ### 1.6 (Ex. 2.27)
 In parallel computing, overlapping computation and communication can greatly enhance performance, depending on the specific tasks involved. Let's consider the potential gains in various scenarios:
 
-When there's only communication and no computation, the benefits of overlapping are limited since there's no computation to overlap with. However, it can still ensure efficient resource utilization by keeping processors busy during communication tasks.
+When there's only communication and no computation time, the benefits of overlapping are limited since there's no computation to overlap with. However, it can still ensure efficient resource utilization by keeping processors busy during communication tasks.
 
 On the other hand, if we are dealing with a situation with only computation and no communication, overlapping won't directly reduce overall execution time even though it helps maximize processor utilization by initiating communication tasks during computational downtime.
 
@@ -175,3 +176,78 @@ Here are the error and runtime results for testing on 5 nodes versus the single 
 
 As can be seen, there is little difference in errors. On the other hand, the runtimes are mostly the same for 1e9 darts while 1e6 flattens out earlier and 1e3 increases faster and sooner before leveling out with 1e6. We predict that this is due to the smaller dart counts reaching the latency/overhead limit sooner as the communication cost is likely limiting them from becoming any faster at that point.
 
+
+## Part 3
+The code for this section is in part3 of hello.cpp. Initially, when compiled with g++ and executed normally, "Hello World!" was printed once. However, running it with mpiexec -n 4 printed "Hello World!" four times, as expected.
+
+We then integrated MPI functionality by including #include "mpi.h", MPI_Initialize, and MPI_Finalize, along with output statements. After compiling with mpiCC, running with mpiexec using four processes resulted in clear outputs: "before init" printed four times, "Hello World! (after init before finalize)" printed four times, and "after finalize" printed four times. This clear separation occurred because MPI_Initialize and MPI_Finalize create a barrier, ensuring all processes reach a specific point before progressing further.
+
+### Exercise 2.3
+```c
+#include "mpi.h"
+#include <cstdio>
+using namespace std;
+
+
+int main(int argc, char *argv[]) 
+{
+    MPI_Init(&argc, &argv);
+    
+    int name_lenght = MPI_MAX_PROCESSOR_NAME;
+    char process_name[name_lenght];
+    MPI_Get_processor_name(process_name, &name_lenght);
+    printf("Proc Name: %s\n", process_name);    
+    
+
+    MPI_Finalize();
+    return 0;
+}
+
+```
+### Exercise 2.4
+
+```c
+#include "mpi.h"
+#include <cstdio>
+using namespace std;
+
+
+int main(int argc, char *argv[]) 
+{
+    MPI_Init(&argc, &argv);
+
+    int size, rank;
+
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    printf("Process: %d out of %d\n", rank, size);
+
+    MPI_Finalize();
+    return 0;
+}
+```
+
+### Exercise 2.5
+```c
+#include "mpi.h"
+#include <cstdio>
+using namespace std;
+
+
+int main(int argc, char *argv[]) 
+{
+    MPI_Init(&argc, &argv);
+
+    int size, rank;
+
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    
+    if (rank == 0) {
+       printf("Process: %d out of %d\n", rank, size);
+    }
+    MPI_Finalize();
+    return 0;
+}
+```
