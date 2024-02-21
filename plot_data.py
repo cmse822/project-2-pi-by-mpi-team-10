@@ -141,6 +141,7 @@ print("PIs:", hpcc_pi_calcs_1000000000)
 # Plot error vs dart count for each processor count
 plt.figure(figsize=(10, 6))
 plt.yscale("log")
+plt.xscale("log")
 plt.title(f"Error Vs Processors")
 plt.xlabel('Darts')
 plt.ylabel('Error (absolute distance from pi)')
@@ -157,6 +158,7 @@ plt.savefig(plotpath + f"Q4-4_plot_errors.png")
 # Plot runtime vs processor count for each dart count
 plt.figure(figsize=(10, 6))
 plt.yscale("log")
+plt.xscale("log")
 plt.plot(hpcc_process_counts_1000, hpcc_times_1000, marker='o', color='b', linestyle='-', label='1e3 Darts')
 plt.plot(hpcc_process_counts_1000000, hpcc_times_1000000, marker='x', color='r', linestyle='-', label='1e6 Darts')
 plt.plot(hpcc_process_counts_1000000000, hpcc_times_1000000000, marker='^', color='g', linestyle='-', label='1e9 Darts')
@@ -166,4 +168,24 @@ plt.ylabel('Runtime (seconds)')
 plt.grid(True)
 plt.legend()
 plt.savefig(plotpath + "Q4-4_plot_runtimes.png")
+
+# Plot runtime vs processor count for each dart count and ideal scaling
+plt.figure(figsize=(10, 6))
+plt.yscale("log")
+plt.xscale("log")
+ideal_1000 = [hpcc_times_1000[0] * 1.0 / float(hpcc_process_counts_1000[i]) for i in range(len(hpcc_process_counts_1000))]
+ideal_1000000 = [hpcc_times_1000000[0] * 1.0 / float(hpcc_process_counts_1000000[i]) for i in range(len(hpcc_process_counts_1000000))]
+ideal_1000000000 = [hpcc_times_1000000000[0] * 1.0 / float(hpcc_process_counts_1000000000[i]) for i in range(len(hpcc_process_counts_1000000000))]
+plt.plot(hpcc_process_counts_1000, hpcc_times_1000, marker='o', color='b', linestyle='-', label='1e3 Darts')
+plt.plot(hpcc_process_counts_1000000, hpcc_times_1000000, marker='x', color='r', linestyle='-', label='1e6 Darts')
+plt.plot(hpcc_process_counts_1000000000, hpcc_times_1000000000, marker='^', color='g', linestyle='-', label='1e9 Darts')
+plt.plot(hpcc_process_counts_1000, ideal_1000, marker='', color='b', linestyle='-', label='1e3 Darts')
+plt.plot(hpcc_process_counts_1000000, ideal_1000000, marker='', color='r', linestyle='-', label='1e6 Darts')
+plt.plot(hpcc_process_counts_1000000000, ideal_1000000000, marker='', color='g', linestyle='-', label='1e9 Darts')
+plt.title(f"Runtime Vs Processors")
+plt.xlabel('Processors')
+plt.ylabel('Runtime (seconds)')
+plt.grid(True)
+plt.legend()
+plt.savefig(plotpath + "Q4-4_plot_runtimes_ideal.png")
 
