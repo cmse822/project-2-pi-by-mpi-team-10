@@ -18,30 +18,47 @@ for (i = 0; i < ProblemSize; i++) {
         a[i] = (b[i] + b[i - 1] + b[i + 1]) / 3;
 }
 
-// Parallel Version with boundary fix
+// Parallel Version with global boundary fix
 MPI_Comm_rank(MPI_COMM_WORLD,&myTaskID);
 MPI_Comm_size(MPI_COMM_WORLD,&nTasks);
 
-//Check what processor we are
-// I am the first processor, left neighbor is last task
+//Check what neighbor are we grabbing values from
+// I am the global first processor, no left neighbor
 if (myTaskID==0) {
-    leftproc = nTasks - 1;
-    rightproc = nTasks + 1;
+    leftproc = MPI_PROC_NULL;
 }
-
-// I am the last processor, right neighbor is first task
-else if (myTaskID==nTasks-1) {
-    leftproc = myTaskID - 1;
-    rightproc = 1; // grab from first task
+else {
+    leftproc = myTaskId - 1;
 }
-// I am a processor in middle, grab from left and right neighbor
-else{
-    leftproc = myTaskID - 1;
-    rightproc = myTaskID + 1; 
+// I am the global last processor, no right neighbor
+if (myTaskID==nTasks-1) {
+    rightproc = MPI_PROC_NULL;
 }
-
+else {
+    rightproc = myTaskId + 1;
+}
+// grab neighbors.
 MPI_Sendrecv( &b[LocalProblemSize-1], &bfromleft, rightproc );
 MPI_Sendrecv( &b[0], &bfromright, leftproc);
+
+// get bfromleft and bfromright from neighbour processors, then
+for (i=0; i<LocalProblemSize; i++) {
+    if (i==0) bleft=bfromleft;
+    else bleft = b[i-1]
+    if (i==LocalProblemSize-1) bright=bfromright;
+    else bright = b[i+1];
+
+    if(myTaskID == 0){ // I am very first processor
+        a[i] = (b[i]+bright)/2    
+    }
+    else if(myTaskID == nTasks-1) { // I am very last processor
+        a[i] = (b[i]+bleft)/2   
+    }
+    else { // We are a processor in the middle
+        a[i] = (b[i]+bleft+bright)/3   
+    }
+}
+
 ```
 ### 1.4 (Ex. 2.22)
 
