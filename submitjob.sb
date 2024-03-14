@@ -1,20 +1,39 @@
 #!/bin/bash
 ########## Define Resources Needed with SBATCH Lines ##########
  
-#SBATCH --time=00:10:00             # limit of wall clock time - how long the job will run (same as -t)
-#SBATCH --ntasks=4                  # number of tasks - how many tasks (nodes) that you require (same as -n)
-#SBATCH --cpus-per-task=1           # number of CPUs (or cores) per task (same as -c)
-#SBATCH --mem=2G                    # memory required per node - amount of memory (in bytes)
-#SBATCH --job-name Name_of_Job      # you can give your job a name for easier identification (same as -J)
+#SBATCH --time=00:03:00             # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --ntasks=64                  # number of tasks - how many tasks (nodes) that you require (same as -n)
+#SBATCH --cpus-per-task=1          # number of CPUs (or cores) per task (same as -c)
+#SBATCH --mem=1G                    # memory required per node - amount of memory (in bytes)
+#SBATCH --job-name par_pi_calc      # you can give your job a name for easier identification (same as -J)
  
- 
+
 ########## Command Lines to Run ##########
 
-module purge
-module load gcc/7.3.0-2.30 openmpi hdf5 python git
-  
-cd $SLURM_SUBMIT_DIR                   ### change to the directory where your code is located
+cd ~/Project2                   ### change to the directory where your code is located
  
-srun -n 4 a.out             ### call your executable
- 
+mpiexec -n 1 ./pi.out 100 10 > ./data/Q4-4_output_1-1000.txt
+mpiexec -n 2 ./pi.out 100 10 > ./data/Q4-4_output_2-1000.txt
+mpiexec -n 4 ./pi.out 100 10 > ./data/Q4-4_output_4-1000.txt
+mpiexec -n 8 ./pi.out 100 10 > ./data/Q4-4_output_8-1000.txt
+mpiexec -n 16 ./pi.out 100 10 > ./data/Q4-4_output_16-1000.txt
+mpiexec -n 32 ./pi.out 100 10 > ./data/Q4-4_output_32-1000.txt
+mpiexec -n 64 ./pi.out 100 10 > ./data/Q4-4_output_64-1000.txt
+
+mpiexec -n 1 ./pi.out 100 10000 > ./data/Q4-4_output_1-1000000.txt
+mpiexec -n 2 ./pi.out 100 10000 > ./data/Q4-4_output_2-1000000.txt
+mpiexec -n 4 ./pi.out 100 10000 > ./data/Q4-4_output_4-1000000.txt
+mpiexec -n 8 ./pi.out 100 10000 > ./data/Q4-4_output_8-1000000.txt
+mpiexec -n 16 ./pi.out 100 10000 > ./data/Q4-4_output_16-1000000.txt
+mpiexec -n 32 ./pi.out 100 10000 > ./data/Q4-4_output_32-1000000.txt
+mpiexec -n 64 ./pi.out 100 10000 > ./data/Q4-4_output_64-1000000.txt
+
+mpiexec -n 1 ./pi.out 100 10000000 > ./data/Q4-4_output_1-1000000000.txt
+mpiexec -n 2 ./pi.out 100 10000000 > ./data/Q4-4_output_2-1000000000.txt
+mpiexec -n 4 ./pi.out 100 10000000 > ./data/Q4-4_output_4-1000000000.txt
+mpiexec -n 8 ./pi.out 100 10000000 > ./data/Q4-4_output_8-1000000000.txt
+mpiexec -n 16 ./pi.out 100 10000000 > ./data/Q4-4_output_16-1000000000.txt
+mpiexec -n 32 ./pi.out 100 10000000 > ./data/Q4-4_output_32-1000000000.txt
+mpiexec -n 64 ./pi.out 100 10000000 > ./data/Q4-4_output_64-1000000000.txt
+
 scontrol show job $SLURM_JOB_ID     ### write job information to output file
